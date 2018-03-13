@@ -5,14 +5,19 @@
 <title></title>
 </head>
 <body>
+<style>
+table{border-collapse:collapse;}
+th, td{border: 1px solid #a9a3a3;padding:2px}
+</style>
 <section id="data"></section>
 <script>
 const Table = (_=>{
-    const Private = Simble();
+    const Private = Symbol();
     return class{
         constructor(parent) {
             if(typeof parent !='string' || !parent) throw 'invalid param';
             this[Private] = {parent};
+            console.log(this[Private]);
         }
         // load(url){
         //     fetch(url).then(response=>{
@@ -22,12 +27,16 @@ const Table = (_=>{
         //     });
         // }
         async load(url) {
-            const response = await fetch(url);
+            const response = await fetch(url, { headers : { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
             if(!response.ok) throw 'invalid response';
             const json = await response.json();
             const {title, header, items} = json;
             if(!items.length) throw 'no items';
-            Object.assing(this[Private], {title, header, items});
+            Object.assign(this[Private], {title, header, items});
             this._render();
         }
         _render(){
@@ -38,12 +47,12 @@ const Table = (_=>{
                 return;
             } else parent.innerHTML = '';
 
-            const table = dodument.createElement('table');
+            const table = document.createElement('table');
             const caption = document.createElement('caption') ;
             caption.innerHtml = fields.title;
             table.appendChild(caption);
             table.appendChild(
-                fileds.header.reduce( (thead, data) =>{
+                fields.header.reduce( (thead, data) =>{
                     const th = document.createElement('th');
                     th.innerHTML = data;
                     thead.appendChild(th);
@@ -51,7 +60,7 @@ const Table = (_=>{
                 }, document.createElement('thead'))
             );
             parent.appendChild(
-                fileds.items.reduce( (table, row) => {
+                fields.items.reduce( (table, row) => {
                     table.appendChild(
                         row.reduce( (tr, data) => {
                             const td = document.createElement('td');
@@ -66,6 +75,7 @@ const Table = (_=>{
         }
     }
 })();
+
 const table = new Table('#data');
 table.load('75_1.json');
 
