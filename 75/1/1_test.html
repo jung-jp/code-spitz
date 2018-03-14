@@ -58,10 +58,17 @@ const Info = class {
 }
 
 const Renderer = class {
-    constructor(){}
+    constructor(){
+        this.title = '';
+        this.header = [];
+        this.items = [];
+    }
     async render(data) {
         if(!(data instanceof Data)) throw 'invalid data type';
-        this._info = await data.getData();
+        const info = await data.getData();
+        this.title = info.title;
+        this.header = info.header;
+        this.items = info.items;
         this._render();
     }
 
@@ -82,15 +89,15 @@ const TableRenderer = class extends Renderer{
         if(!parent) throw 'invalid parent';
         parent.innerHTML = '';
         const [table, caption] = 'table,caption'.split(',').map(v=>document.createElement(v));
-        caption.innerHTML = this._info.title;
+        caption.innerHTML = this.title;
         table.appendChild(caption);
         table.appendChild(
-            this._info.header.reduce( 
+            this.header.reduce( 
                 (thead, data) => (thead.appendChild(document.createElement('th')).innerHTML = data, thead)
             ,document.createElement('thead'))
         );
         parent.appendChild(
-            this._info.items.reduce(
+            this.items.reduce(
                 (table, row) => (
                     table.appendChild(
                         row.reduce(
