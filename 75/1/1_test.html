@@ -59,16 +59,16 @@ const Info = class {
 
 const Renderer = class {
     constructor(){
-        this.title = '';
-        this.header = [];
-        this.items = [];
+        this._title = '';
+        this._header = [];
+        this._items = [];
     }
     async render(data) {
         // if(!(data instanceof Data)) throw 'invalid data type';
         // const info = await data.getData();
-        this.title = data.title;
-        this.header = data.header;
-        this.items = data.items;
+        this._title = data.title;
+        this._header = data.header;
+        this._items = data.items;
         this._render();
     }
 
@@ -89,15 +89,15 @@ const TableRenderer = class extends Renderer{
         if(!parent) throw 'invalid parent';
         parent.innerHTML = '';
         const [table, caption] = 'table,caption'.split(',').map(v=>document.createElement(v));
-        caption.innerHTML = this.title;
+        caption.innerHTML = this._title;
         table.appendChild(caption);
         table.appendChild(
-            this.header.reduce( 
+            this._header.reduce( 
                 (thead, data) => (thead.appendChild(document.createElement('th')).innerHTML = data, thead)
             ,document.createElement('thead'))
         );
         parent.appendChild(
-            this.items.reduce(
+            this._items.reduce(
                 (table, row) => (
                     table.appendChild(
                         row.reduce(
@@ -113,7 +113,9 @@ const TableRenderer = class extends Renderer{
 
 const data = new JsonData('75_1.json');
 const renderer = new TableRenderer('#data');
-(async() => renderer.render(await data.getData() ))();
+(
+    async() => renderer.render(await data.getData())
+)();
 </script>
 </body>
 </html>
