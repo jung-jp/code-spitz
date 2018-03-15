@@ -64,11 +64,11 @@ const Renderer = class {
         this.items = [];
     }
     async render(data) {
-        if(!(data instanceof Data)) throw 'invalid data type';
-        const info = await data.getData();
-        this.title = info.title;
-        this.header = info.header;
-        this.items = info.items;
+        // if(!(data instanceof Data)) throw 'invalid data type';
+        // const info = await data.getData();
+        this.title = data.title;
+        this.header = data.header;
+        this.items = data.items;
         this._render();
     }
 
@@ -113,8 +113,7 @@ const TableRenderer = class extends Renderer{
 
 const data = new JsonData('75_1.json');
 const renderer = new TableRenderer('#data');
-renderer.render(data);
-
+(async() => renderer.render(await data.getData() ))();
 </script>
 </body>
 </html>
