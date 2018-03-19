@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+<title>codespitz s75_2 - PRACTICE#2</title>
+</head>
+<body>
+    <img id="a"/>
+    <div id="b"></div>
+
+<script>
+const Loader = class {
+    constructor(v) {
+        this._el = document.querySelector(v);
+    }
+    _load() {
+        throw 'overried method';
+    }
+}
+
+const ImageLoader = class extends Loader{
+    constructor(el) {
+        super(el);
+    }
+    _load(v) {
+        this._el.src = 'data:text/plain;base64,' + v;
+    }
+}
+
+const MdLoader = class extends Loader{
+    constructor(el) {
+        super(el);
+    }
+    _load(v) {
+        this._el.innerHTML = this.d64(v).split('\n').map(v=>{
+            let i = 3;
+            while(i--) {
+                if( v.startsWith('#'.repeat(i+1)) ) return `<h${i+1}>${v.substr(i+1)}</h${i+1}>`;
+            }
+            return v;
+        }).join('<br>');
+    }
+
+    d64(v) {
+        return decodeURIComponent(
+            atob(v).split('').map(c=>'%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)) . join('')
+        );
+    }
+}
+
+
+const Github = class{
+    constructor(id='hikaMaeng', repo='codespitz75') {
+        // this._router = new Map;
+        this._path = `https://api.github.com/repos/${id}/${repo}/contents/`;
+        this._parser = null;
+        this._id = 0;
+    }
+
+    load(path) {
+        if(!this._parser) return;
+        const callBackFn = `callback${this._id++}`;
+        const parser = this._parser;
+        const f = Github[callBackFn] = ({data : {content}}) => {
+            delete Github[callBackFn];
+            document.head.removeChild(s);
+            parser._load(content);
+        }
+        const s = document.createElement('script');
+        s.src = `${this._path + path}?callback=Github.${callBackFn}`;
+        document.head.appendChild(s);
+    }
+
+    setParser(parser) {
+        if( !(parser instanceof Loader) ) return;
+        this._parser = parser;
+    }
+}
+
+
+const loader = new Github('hikaMaeng', 'codespitz75');
+loader.setParser( new ImageLoader('#a') );
+loader.load('einBig.png');
+
+loader.setParser( new MdLoader('#b') );
+loader.load('README.md');
+
+</script>
+</body>
+</html>

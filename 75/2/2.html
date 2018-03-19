@@ -1,0 +1,149 @@
+
+
+<script>
+// 상속위임 (TEMPLATE METHOD PATTERN)
+const Github = class{
+    constructor(id, repo) {
+        this._base = `https://api.github.com/repos/${id}/${repo}/contents/`;
+    }
+    load(path) {
+        const id = 'callback' + Github._id++;
+        const f = Github[id] = ({data:{content}})=>{
+            delete Github[id];
+            document.head.removeChild(s);
+            this._loaded(content);
+        };
+        const s = document.createElement('script');
+        s.src = `${this._base + path}?callback=Github. ${id}`;
+        document.head.appendChild(s);
+    }
+    // HOOK METHOD
+    _loaded(v){throw 'override!';}
+};
+Github._id = 0;
+
+/*
+github class
+깃헙 api에서 contents 를 받아온다.
+*/
+
+
+const ImageLoader = class extends Github{
+    constructor(id, repo, target) {
+        super(id, repo);
+        this._target = target;
+    }
+    _loaded(v) {
+        this._target.src = 'data:text/plain;base64,' + v;
+        
+    }
+}
+
+const s75img = new ImageLoader(
+    'hikaMaeng',
+    'codespitz75',
+    document.querySelector('#a')
+);
+s75img.load('einBig.png');
+
+const MdLoader = class extends Github {
+    constructor(id, repo, target) {
+        super(id, repo);
+        this._target = target;
+    }
+    _loaded(v) {
+        this._target.innerHTML = this._parseMD(v);
+    }
+    _parseMD(v) {
+        return d64(v).split('\n').map(v=>{
+            let i = 3;
+            while(i--) {
+                if( v.startsWith('#'.repeat(i+1)) ) return `<h${i+1}>${v.substr(i+1)}</h${i+1}>`;
+            }
+            return v;
+        }).join('<br>');
+    }
+}
+
+const d64 = v=>decodeURIComponent(
+    atob(v).split('').map(c=>'%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)) . join('')
+);
+
+const s75md = new MdLoader('hikaMaeng', 'codespitz75', document.querySelector('#b'));
+s75md.load('README.md');
+
+
+// 소유위임 (STARATEGY PARTTERN)
+const Github = class{
+    constructor(id, repo) {
+        this._base = `https://api.github.com/repos/${id}/${repo}/contents/`;
+    }
+    load(path) {
+        if(!this._parser) return;
+        const id = 'callback' + Github._id++;
+        const f = Github[id] = ({data:{content}})=>{
+            delete Github[id];
+            document.head.removeChild(s);
+            this._parser[0](content, ...this.parser[1]); // 위임부분
+        };
+        const s = document.createElement('script');
+        s.src = `${this._base + path}?callback=Github. ${id}`;
+        document.head.appendChild(s);
+    }
+    //위임객체 (전략 메소드, 전략 객체)
+    setParser(f, ...arg) {this._parser = [f, arg];} 
+};
+Github._id = 0;
+
+const el = v=>document.querySelector(v);
+const parseMD = v=> '...';
+const loader = new Github('hikaMaeng', 'codespitz75');
+
+// // img
+// const img = v=>el('#a').src = 'data:text/plain;base64,' + v;
+// loader.parser = img;
+// loader.load('xx.png');
+
+// // md
+// const md = v=>el('#b').innerHTML = parseMD(v);
+// loader.parser = md;
+// loader.load('xx.md');
+
+// img 
+const img = (v, el) => el.src = 'data:text/plain;base64,' + v;
+loader.setParser(img, el('#a'));
+loader.load('xx.png');
+
+// md
+const md = (v, el) => el.innerHTML = parseMD(v);
+loader.setParser(md, el('#b'));
+loader.load('xx.md');
+
+// 실행시점 선택 위임
+
+const Loader = class{
+    constructor(id, repo) {
+        this._git = new Github(id, repo);
+        this._router = new Map;
+    }
+
+    add(ext, f, ...arg) {
+        ext.split(',').forEach(v=>this._router.set(v, [f, ...arg]));
+    }
+
+    load(v) {
+        const ext = this._v.split('.').pop();
+        if(!this._router.has(ext)) return ;
+        this._git.setParser(...this._router.get(ext));
+        this._git.load(v);
+    }
+}
+
+const loader = new Loader('hikaMaeng', 'codespitz75');
+loader.add('jpg,png,gif', img, el('#a'));
+loader.add('md, md', md, el('#b'));
+
+loader.load('xx.jpg');
+loader.load('xx.md');
+
+</script>
