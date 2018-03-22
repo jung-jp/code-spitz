@@ -6,6 +6,8 @@
 <body>
     <img id="a"/>
     <div id="b"></div>
+    <img id="c"/>
+    <div id="d"></div>
 
 <script>
 const el = (v)=>document.querySelector(v);
@@ -50,9 +52,11 @@ const Github = class{
 }
 
 const Loader = class {
-    constructor(id, repo) {
-        this._github = new Github(id, repo);
+    constructor() {
+        // this._github = null;
+        //new Github(id, repo);
         this._router = new Map;
+        this._repo = new Map;
     }
 
     add(ext, fn, ...args) {
@@ -62,10 +66,20 @@ const Loader = class {
         });
     }
 
-    load(v) {
+    load(k, v) {
         const ext = v.split('.').pop();
-        this._github.setParser(...this._router.get(ext));
-        this._github.load(v);
+        console.log(this._router.get(ext)[1]);
+        (this._repo.get(k)).setParser(this._router.get(ext)[0](v, this._router.get(ext)[1]));
+        // (this._repo.get(k)).load(v);
+    }
+
+    addRepo(key, id, repo) {
+        this._repo.set(key, new Github(id, repo));
+    }
+
+    addRouter(key, ext, fn, el) {
+        this.add(ext, fn, el);
+        ext.split(',').forEach(v=>this._router.set(v, [fn, el]));
     }
 }
 
@@ -84,8 +98,8 @@ loader.addRepo('s75', 'hikaMaeng', 'codespitz75'); // 75용 레포지토리 등�
 loader.addRouter('s75', 'jpg,png,gif', img, el('#c')); // 75 라우터 등록
 loader.addRouter('s75', 'md', md, el('#d'));
 
-loader.load('s74', 'xx.jpg'); // 레포지토리별 로드
-loader.load('s75', 'xx.md');
+loader.load('s74', 'einBig.png'); // 레포지토리별 로드
+loader.load('s75', 'README.md');
 
 </script>
 </body>
