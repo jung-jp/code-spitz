@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+<head>
+<title>codesptz 75-3</title>
+</head>
+<body>
+
+<script>
+const list1 = new TaskList('비사이드');
+list1.add('지라설치');
+list1.add('지라클라우드접속');
+
+const list2 = new TaskList('s75');
+list2.add('2강 답안 작성');
+list2.add('3강 답안 작성');
+
+console.log(list1.byTitle());
+console.log(list2.byDate());
+
+const Task = class{
+    constructor(title, date) {
+        if(!title) throw 'invalid title';
+        this._title = title;
+        this._date = date;
+        this._isComplete = false;
+    }
+
+    isComplete() {
+        return this._isComplete;
+    }
+
+    toggle() {
+        this._isComplete = !this._isComplete;
+    }
+
+    sortTitle(task) {
+        return this._title > task._title;
+    }
+
+    sortDate(task) {
+        return this._date > task._date;
+    }
+};
+
+const taskSort = {
+    title: (a, b) => a.sortTitle(b),
+    data: (a, b) => a.sortDate(b),
+};
+
+const TaskList = class {
+    constructor(title) {
+        if(!title) throw 'invalid title';
+        this._title = title;
+        this._list = [];
+    }
+
+    add(title, date = Date.new()) {
+        this._list.push(new Task(title, data));
+    }
+
+    remove(task) {
+        const list = this._list;
+        if(list.includes(task)) {
+            list.splice(list.indexOf(task), 1);
+        }
+    }
+
+    byTitle(stateGroup = true) {
+        this._getList('title', stateGroup);
+    }
+
+    byDate(stateGroup = true) {
+        this._getList('date', stateGroup);
+    }
+
+    _getList(sort, stateGroup) {
+        const list = this._list, s = taskSort[sort];
+        return stateGroup ? 
+            [...list].sort(s) : 
+            [...filter(v=>!v.isComplete()).sort(s), ...filter(v=>v.isComplete()).sort(s)]
+        ;
+    }
+}
+</script>
+</body>
+</html>

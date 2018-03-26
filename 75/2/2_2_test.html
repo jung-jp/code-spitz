@@ -77,8 +77,8 @@ const Loader = class {
         this._repo.set(key, new Github(id, repo));
     }
 
-    addRouter(key, ext, fn, el) {
-        this.add(ext, fn, el);
+    addRouter(key, ext, fn, ...args) {
+        this.add(ext, fn, args);
         ext.split(',').forEach(v=>this._router.set(v, [fn, el]));
     }
 }
