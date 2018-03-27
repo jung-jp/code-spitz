@@ -25,16 +25,16 @@ const md = (v, el) => {
     }).join('<br>');
 }
 
+
 const Github = class{
     constructor(id='hikaMaeng', repo='codespitz75') {
         this._path = `https://api.github.com/repos/${id}/${repo}/contents/`;
         this._parser = [];
-        this._id = 0;
     }
 
     load(path) {
-        if(!this.parser) return;
-        const callBackFn = `callback${this._id++}`;
+        if(!this._parser) return;
+        const callBackFn = `callback${Github._id++}`;
         const parser = this._parser;
         const f = Github[callBackFn] = ({data : {content}}) => {
             delete Github[callBackFn];
@@ -50,27 +50,24 @@ const Github = class{
         this._parser = [fn, args];
     }
 }
+Github._id = 0;
 
 const Loader = class {
     constructor() {
-        // this._github = null;
-        //new Github(id, repo);
         this._router = new Map;
         this._repo = new Map;
     }
 
-    add(ext, fn, ...args) {
-        ext.split(',').forEach(v=>{
-            this._router.set(v, [fn, ...args])
-            console.log(this._router);
-        });
-    }
-
     load(k, v) {
         const ext = v.split('.').pop();
-        console.log(this._router.get(ext)[1]);
-        (this._repo.get(k)).setParser(this._router.get(ext)[0](v, this._router.get(ext)[1]));
-        // (this._repo.get(k)).load(v);
+
+        if(!this._router.get(k).has(ext)) return ;
+
+        const router = this._router.get(k).get(ext);
+        const repo = this._repo.get(k);
+
+        repo.setParser(...router);
+        repo.load(v);
     }
 
     addRepo(key, id, repo) {
@@ -78,8 +75,17 @@ const Loader = class {
     }
 
     addRouter(key, ext, fn, ...args) {
-        this.add(ext, fn, args);
-        ext.split(',').forEach(v=>this._router.set(v, [fn, el]));
+        
+        if ( !this._router.has(key) ) {
+            this._router.set(key, new Map());
+        }
+
+        const router = this._router.get(key);
+
+        ext.split(',').forEach(v=>{
+            router.set(v, [fn, ...args]);
+        });
+        
     }
 }
 
@@ -88,9 +94,9 @@ const Loader = class {
     Loader의 라우팅 테이블을 2단계로 확장하여 다양한 저장소별 매핑이 가능하도록 작성하라.
     (1의 구조를 활용하거나 전략함수 기반중 선택)
 */
-
+'hikaMaeng', 'codespitz75'
 const loader = new Loader();
-loader.addRepo('s74', 'hikaMaeng', 'codespitz74'); // 74용 레포지토리 등록
+loader.addRepo('s74', 'hikaMaeng', 'codespitz75'); // 74용 레포지토리 등록
 loader.addRouter('s74', 'jpg,png,gif', img, el('#a')); // 74용 라우터 등록
 loader.addRouter('s74', 'md', md, el('#b'));
 
