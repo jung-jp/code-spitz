@@ -66,11 +66,11 @@ const TaskList = class {
     }
 
     byTitle(stateGroup = true) {
-        this._getList('title', stateGroup);
+        return this._getList('title', stateGroup);
     }
 
     byDate(stateGroup = true) {
-        this._getList('date', stateGroup);
+        return this._getList('date', stateGroup);
     }
 
     _getList(sort, stateGroup) {
@@ -80,6 +80,22 @@ const TaskList = class {
             [...filter(v=>!v.isComplete()).sort(s), ...filter(v=>v.isComplete()).sort(s)]
         ;
     }
+}
+
+
+class component {
+    operation(){};
+    add(){};
+    remove(){};
+    getChild(){};
+}
+
+class leaf extends component {
+    operation();
+}
+
+class composite{
+
 }
 </script>
 </body>

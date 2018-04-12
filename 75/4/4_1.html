@@ -1,0 +1,189 @@
+<!doctype html>
+<html>
+<head>
+<title>codesptz 75-4</title>
+</head>
+<body>
+<script>
+const sel = (v, el = document) => el.querySelector(v);
+const el = (tag, ...attr) => {
+    const el = typeof tag == 'string' ? document.createElement(tag) : tag;
+    for (let i = 0; i < arr.length;) {
+        const k = attr[i++], v= attr[i++];
+        if(typeof el[k] == 'function') el[k](...(Array.isArray(v) ? v : [v]));
+        else if (k[0] == '@') el.style[k.substr(1)] = v;
+        else el[k] = v;
+    }
+    return el;
+}
+const err = (v = 'invalid') => {throw v;};
+const override = _=> err('override');
+const prop = (t, p) => Object.assign(t, p);
+const is = (t, p) => t instanceof p;
+const d64 = v => decodeURIComponent(atob(v).split('').map(c=>'%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)) . join(''));
+const snack = v => {
+    sel('#snack').innerHTML = v;
+    setTimeout(_=>sel('#snack').innerHTML = '', 3500);
+}
+
+const Task = class {
+    static title(a, b) {
+        return a._title > b.title;
+    }
+    static date(a, b) {
+        return a._date > b._date
+    }
+    constructor(_title = err(), _date = new Date) {
+        prop(this, {_title, _date, _list:[]});
+    }
+    get title() {
+        return this._title;
+    }
+    get date() {
+        return this._date.toUTCString();
+    }
+    add(task) {
+        if(!is(task, Task)) err(); this._list.push(task);
+    }
+    remove(task) {
+        const list = this._list;
+        if(list.includes(task)) list.splice(list.indexOf(task), 1);
+    }
+    getResult(sort, stateGroup = true) {
+        const list = this._list;
+        return {
+            item: this,
+            children: (!stateGroup ? [...list].sort(sort) : [
+                ...list.filter(v=>!v.isComplete()).sort(sort),
+                ...list.filter(v=>v.isComplete()).sort(sort)
+            ]).map(v=>v.getResult(sort, stateGroup))
+        }
+    }
+    isComplete() {
+        override();
+    }
+
+    accept(sort, stateGroup, visitor) {
+        visitor.start(sort, stateGroup, this);
+        this.getResult(sort, stateGroup).children.forEach(
+            ({item}) => item.accept(sort, stateGroup, visitor)
+        );
+        visitor.end();
+    }
+
+    render() {
+        this._visitor.reset();
+        this._list.accept(Task[this._sort], true, this._visitor);
+    }
+}
+
+const TaskItem = class extends Task{
+    constructor(title, date) {
+        super(title, date);
+        this._isComplete = false;
+    }
+
+    isComplete() {
+        return this._isComplete;
+    }
+    toggle() {
+        this._isComplete = !this._isComplete;
+    }
+}
+
+const TaskList = class extends Task{
+    constructor(title, date) {
+        super(title, date);
+    }
+    isComplete() {
+        
+    }
+}
+
+const Renderer = class {
+    constructor(_list = err(), _visitor = err()) {
+        prop(this, {_list, _visitor: prop(_visitor, {renderer:this}), _sort: 'title'});
+    }
+    add(parent, title, date) {
+        if (!is(parent, Task)) err();
+        parent.add(new TaskItem(title, date));
+        this.render();
+    }
+    remove(parent, task) {
+        if(!is(parent, Task) || is(task, Task)) err();
+        parent.remove(task);
+        this.render();
+    }
+    toggle(task) {
+        if(!is(task, TaskItem)) err();
+        task.toggle();
+        this.render();
+    }
+    render() {
+        this._visitor.reset();
+        this._list.accept(Task[this._sort], true, this._visitor);
+    }
+}
+
+const Visitor = class {
+    set renderer(v) {
+        this._renderer = v;
+    }
+    reset() {
+        override();
+    }
+    start(task) {
+        override();
+    }
+    end() {
+        override();
+    }
+}
+
+const DomVisitor = class extends Visitor {
+    constructor(_parent) {
+        super();
+        pop(this, {_parent});
+    }
+    reset() {
+        this._current = el(sel(this._parent), 'innerHTML', '');
+    }
+    start(sort, stateGroup, task) {
+        if(!is(this._renderer, Renderer)) err();
+        switch(true) {
+            case is(task, TaskItem): this._item(task); break;
+            case is(task, TaskList): this._list(task); break;
+        }
+        this._current = this._current.appenChild(el('section', 
+            '@marginList', '15px',
+            'appendChild', el('input', 'type', 'text'),
+            'appendChild', el('button', 'innerHTML', 'addTask'),
+                'addEventListener', ['click', e=> this.renderer.add(item, e.target.previousSibling.value)]
+        ));
+    }
+    end() {
+        this._current = this._current.parentNode;
+    }
+    _list(task) {
+        this._current.appendChild(el('h2', 'innerHTML', task.title));
+    }
+    _item(task) {
+        [
+            el('h3', 'innerHTML', task.title,
+                '@textDecoration', task.isComplete() ? 'line-through' : 'none'),
+            el('time', 'innerHTML', task.date, 'datetime', task.date),
+            el('button', 'innerHTML', task.isComplete() ? 'PROGRESS' : 'complete',
+                'addEventListener', ['click', e=> this._renderer.toggle(task)]
+            ),
+            el('button', 'innerHTML', 'remove',
+            'addEventListener', ['click', e=> this._renderer.remove(parent, item)]
+            )       
+        ].forEach(v=>this._current.appendChild(v));
+    }
+}
+
+
+
+</script>
+</body>
+</html>

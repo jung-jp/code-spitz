@@ -7,7 +7,7 @@
     <div id="todo"></div>
 
 <script>
-/*
+
 const list1 = new TaskList('비사이드');
 list1.add('지라설치');
 list1.add('지라클라우드접속');
@@ -198,23 +198,7 @@ const TaskList = class extends Task{
         return this.getResult(Task.date, stateGroup);
     }
 }
-*/
 //-------------------------------------------------
-
-const el = (tag, ...attr) => {
-    const el = document.createElement(tag);
-    for(let i = 0; i < attr.length;) {
-        const k = attr[i++], v = attr[i++];
-        if(typeof el[k] == 'function') {
-            el[k](...(Array.isArray(v) ? v : [v]));
-        } else if(k[0] == '@') {
-            el.style[k.substr(1)] = v;
-        } else {
-            el[[k] = v];
-        }
-    }
-    return el;
-}
 
 const Task = class {
     constructor(title) {
@@ -239,6 +223,7 @@ const Task = class {
     getResult(sort, stateGroup) {
         const list = this._list;
         return {
+            // item: this._getResult(),
             item: this,
             children: (!stateGroup ? [...list].sort(sort) : [
                 ...list.filter(v=>!v.isComplete()).sort(sort),
@@ -257,6 +242,10 @@ const TaskItem = class extends Task{
         this._date = date;
         this._isComplete = false;
     }
+
+    // _getResult(sort, stateGroup) {
+    //     return this;
+    // }
 
     isComplete() {
         return this._isComplete;
@@ -277,17 +266,43 @@ const TaskList = class extends Task{
         super(title);
     }
 
-    isComplete() {}
+    // _getResult() {
+    //     return this._title;
+    // }
 
-    byTitle(stateGroup = true) {
-        return this.getResult(Task.title, stateGroup);
+    isComplete() {
+        
+    }
+    sortTitle() {
+        return this;
+    }
+    sortDate() {
+        return this;
     }
 
-    byDate(stateGroup = true) {
-        return this.getResult(Task.date, stateGroup);
-    }
+    // byTitle(stateGroup = true) {
+    //     return this.getResult(Task.title, stateGroup);
+    // }
+
+    // byDate(stateGroup = true) {
+    //     return this.getResult(Task.date, stateGroup);
+    // }
 }
 
+const el = (tag, ...attr) => {
+    const el = document.createElement(tag);
+    for(let i = 0; i < attr.length;) {
+        const k = attr[i++], v = attr[i++];
+        if(typeof el[k] == 'function') {
+            el[k](...(Array.isArray(v) ? v : [v]));
+        } else if(k[0] == '@') {
+            el.style[k.substr(1)] = v;
+        } else {
+            el[[k] = v];
+        }
+    }
+    return el;
+}
 const DomRenderer = class {
     constructor(list, parent) {
         this._parent = parent;

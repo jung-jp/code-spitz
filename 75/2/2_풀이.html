@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+<head>
+<title>codespitz s75_2 - PRACTICE#2</title>
+</head>
+<body>
+    <img id="a"/>
+    <div id="b"></div>
+    <img id="c"/>
+    <div id="d"></div>
+
+<script>
+const el = (v)=>document.querySelector(v);
+const img = (v, el) => el.src = 'data:text/plain;base64,' + v;
+const md = (v, el) => {
+    const d64 = v=>decodeURIComponent(
+        atob(v).split('').map(c=>'%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)) . join('')
+    );
+    el.innerHTML = d64(v).split('\n').map(v=>{
+        let i = 3;
+        while(i--) {
+            if( v.startsWith('#'.repeat(i+1)) ) return `<h${i+1}>${v.substr(i+1)}</h${i+1}>`;
+        }
+        return v;
+    }).join('<br>');
+}
+
+const JsonpLoaded = class {
+    jsonpLoaded() {
+        throw 'override';
+    }
+}
+
+const jsonp = (path, listener) => {
+    if( !(listener instanceof JsonpLoaded) ) throw 'invalid listener';
+    const s = document.createElement('script');
+    const callBackFn = `callback${jsonp._id++}`;
+    const f = jsonp[callBackFn] = (v) => {
+        delete jsonp[callBackFn];
+        document.head.removeChild(s);
+        listener.jsonpLoaded(v);
+    }
+    
+    s.src = `${path}?callback=jsonp.${callBackFn}`;
+    document.head.appendChild(s);
+}
+jsonp._id = 0;
+
+const Github = class extends JsonpLoaded{
+    constructor(id='hikaMaeng', repo='codespitz75') {
+        this._path = `https://api.github.com/repos/${id}/${repo}/contents/`;
+        this._parser = [];
+    }
+
+    load(path) {
+        if(!this._parser) return;
+        jsonp(this._path + path, listener);
+    }
+
+    jsonpLoaded({data:{content}}) {
+        this._loaded(content);
+    }
+
+    setParser(fn, ...args) {
+        this._parser = [fn, args];
+    }
+}
+
+
+const Loader = class {
+    constructor() {
+        this._router = new Map;
+        this._repo = new Map;
+    }
+
+    load(k, v) {
+        const ext = v.split('.').pop();
+
+        if(!this._router.get(k).has(ext)) return ;
+
+        const router = this._router.get(k).get(ext);
+        const repo = this._repo.get(k);
+
+        repo.setParser(...router);
+        repo.load(v);
+    }
+
+    addRepo(key, id, repo) {
+        this._repo.set(key, new Github(id, repo));
+    }
+
+    addRouter(key, ext, fn, ...args) {
+        
+        if ( !this._router.has(key) ) {
+            this._router.set(key, new Map());
+        }
+
+        const router = this._router.get(key);
+
+        ext.split(',').forEach(v=>{
+            router.set(v, [fn, ...args]);
+        });
+        
+    }
+}
+
+/**
+    #2 practice
+    Loader의 라우팅 테이블을 2단계로 확장하여 다양한 저장소별 매핑이 가능하도록 작성하라.
+    (1의 구조를 활용하거나 전략함수 기반중 선택)
+*/
+'hikaMaeng', 'codespitz75'
+const loader = new Loader();
+loader.addRepo('s74', 'hikaMaeng', 'codespitz75'); // 74용 레포지토리 등록
+loader.addRouter('s74', 'jpg,png,gif', img, el('#a')); // 74용 라우터 등록
+loader.addRouter('s74', 'md', md, el('#b'));
+
+loader.addRepo('s75', 'hikaMaeng', 'codespitz75'); // 75용 레포지토리 등록
+loader.addRouter('s75', 'jpg,png,gif', img, el('#c')); // 75 라우터 등록
+loader.addRouter('s75', 'md', md, el('#d'));
+
+loader.load('s74', 'einBig.png'); // 레포지토리별 로드
+loader.load('s75', 'README.md');
+
+</script>
+</body>
+</html>
