@@ -15,5 +15,10 @@
 <script src="./js/util.js"></script>
 <script src="./js/mvvm.js"></script>
 <script src="./js/app.js"></script>
+<script>
+const app = new App('#content');
+app.add('todo', _=>new Todo(true), _=> new TodoView(true));
+app.route('todo');
+</script>
 </body>
 </html>

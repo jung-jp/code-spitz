@@ -165,7 +165,3 @@ const TodoView = class extends View{
 
 	}
 };
-
-const app = new App('#content');
-app.add('todo', _=>new Todo(true), _=> new TodoView(true));
-app.route('todo');
