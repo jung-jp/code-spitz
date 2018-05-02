@@ -1,4 +1,12 @@
 
+/**
+ * todo 모델
+ * @param {*} _id 
+ * @param {*} _importance 
+ * @param {*} _title 
+ * @param {*} _contents 
+ * @param {*} _reg_dt 
+ */
 const TodoModel = class extends Model{
     constructor(_id = err(), _importance = '1', _title = '', _contents = '', _reg_dt = new Date()){
         super();
@@ -16,6 +24,10 @@ const TodoModel = class extends Model{
     get contents(){return this._contents}
 };
 
+/**
+ * todo 리스트 모델
+ * @param {*} isSingleton 
+ */
 const TodoListModel = class extends Model{
     constructor(isSingleton){
         super(isSingleton);
@@ -50,6 +62,11 @@ const TodoListModel = class extends Model{
     }
 };
 
+/**
+ * todo ViewModel
+ *  뷰, 모델 관련 처리 및 통지.
+ * @param {*} isSingleton 
+ */
 const Todo = class extends ViewModel{
 	constructor(isSingleton){
         super(isSingleton);
@@ -98,6 +115,11 @@ const Todo = class extends ViewModel{
     }
 };
 
+/**
+ * todo View
+ * 뷰 생성 및 처리.
+ * @param {*} isSingleton 
+ */
 const TodoView = class extends View{
     constructor(isSingleton){
         super(el('div', 'className', 'todo'), isSingleton);
