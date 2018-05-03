@@ -11,10 +11,10 @@ const TodoModel = class extends Model{
     constructor(_id = err(), _importance = '1', _title = '', _contents = '', _reg_dt = new Date()){
         super();
         prop(this, {_id});
-        this.edit(_id, _importance, _title, _contents, _reg_dt);
+        this.edit(_importance, _title, _contents, _reg_dt);
     }
-    edit(_id, _importance = '1', _title = '', _contents = '', _reg_dt){
-        prop(this, {_importance, _reg_dt, _title, _contents});
+    edit(_importance = '1', _title = '', _contents = '', _reg_dt){
+        prop(this, {_importance, _title, _contents, _reg_dt});
         this.notify();
     }
     get id(){return this._id;}
@@ -71,22 +71,43 @@ const Todo = class extends ViewModel{
 	constructor(isSingleton){
         super(isSingleton);
     }
+
+    /**
+     * 뷰모델 실행시 기본 호출 메소드 
+     * @param {*} id 
+     */
 	base(id){
 		prop(this, {_id:id});
         const model = new TodoListModel(true);
 		model.add(this.observer);
 		model.notify();
     }
+
+    /**
+     * 모델의 변경을 통지 받아 view를 notify()한다. (view.render() 실행됨)
+     * @param {*} model 
+     */
 	listen(model){
         if(!is(model, TodoListModel)) err();
         this.notify(model.list);
     }
+
+    $list(){
+
+    }
+
+    /**
+     * 이벤트 처리 - 삭제
+     */
 	$remove(){
 		const model = new TodoListModel(true);
         model.remove(this._id);
 		this.$list();
     }
     
+    /**
+     * 이벤트 처리 - 추가
+     */
     $add(el) {
         const importance = sel('#importance').value;
         const title = sel('#title').value;
@@ -101,9 +122,13 @@ const Todo = class extends ViewModel{
         this.notify(model.list);
     }
 
+    /**
+     * 이벤트 처리 - 수정
+     */
 	$edit(importance, title, contents){
         const model = new TodoListModel(true).get(this._id);
-		model.edit(importance, title, contents);
+        model.edit(importance, title, contents);
+        this.notify(model.list);
     }
     
     $sortImpt() {

@@ -104,7 +104,7 @@ const Model = class extends Subject{
 
 /**
  * 모델의 옵져버 처리를위한 추상클래스.
- *  - 모델이 변경되면 뷰모델에 통지해준다. listen()
+ *  - 뷰모델을 모델의 objserver로 등록하고 모델이 변경되면 뷰모델에 통지해준다. listen()
  * @param {*} _viewmodel 
  */
 const ViewModelObserver = class extends Observer{
